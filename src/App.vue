@@ -3,20 +3,30 @@ import {computed, onMounted, ref} from "vue";
 import AnimatedPlaceholder from "@/components/AnimatedPlaceholder.vue";
 
 const userData = ref(null)
-const loading = ref(false)
+const loading = ref(true)
 
-const getUser = async () => {
-  if (!loading.value) {
+const getUser = async (isInitial = false) => {
+  if (isInitial) {
     loading.value = true
     const res = await fetch('https://randomuser.me/api')
     const {results} = await res.json()
     userData.value = results[0]
-    loading.value = false
+    setTimeout(() => {
+      loading.value = false
+    }, 500)
+  } else {
+    if (!loading.value) {
+      loading.value = true
+      const res = await fetch('https://randomuser.me/api')
+      const {results} = await res.json()
+      userData.value = results[0]
+      loading.value = false
+    }
   }
 }
 
 onMounted(() => {
-  getUser()
+  getUser(true)
 })
 
 const fullName = computed(() => {
@@ -36,17 +46,17 @@ document.body.onkeyup = (e) => {
 
 <template>
 <div class="random-user-generator" @keyup.enter="getUser">
-  <div v-if="!loading" class="user-info">
-    <img v-if="picture" loading="lazy" :class="userData.gender" :src="picture" :alt="fullName">
-    <h1>{{ fullName }}</h1>
-    <h1>{{ userData.email }}</h1>
-    <button :class="userData.gender" @click="getUser">Get Random User</button>
-  </div>
+    <div v-if="!loading" class="user-info">
+      <img v-if="picture" loading="lazy" :class="userData.gender" :src="picture" :alt="fullName">
+      <h1>{{ fullName }}</h1>
+      <h1>{{ userData.email }}</h1>
+      <button :class="userData.gender" @click="getUser">Get Random User</button>
+    </div>
   <div v-else class="loader">
-    <AnimatedPlaceholder width="138px" height="138px" border-radius="50%" margin="0 0 1rem"/>
-    <AnimatedPlaceholder width="240px" height="30px" border-radius="4px" margin="0 0 1rem"/>
-    <AnimatedPlaceholder width="350px" height="30px" border-radius="4px" margin="0 0 1rem"/>
-    <AnimatedPlaceholder width="193px" height="53px" border-radius="4px"/>
+    <AnimatedPlaceholder class="image-loader"/>
+    <AnimatedPlaceholder class="text-loader"/>
+    <AnimatedPlaceholder class="text-loader-2"/>
+    <AnimatedPlaceholder class="button-loader"/>
   </div>
 </div>
 </template>
@@ -65,6 +75,7 @@ body {
   width: 100%;
   height: 100dvh;
   font-family: "Inter", sans-serif;
+  background-color: #f4f4f4;
 }
 
 #app {
@@ -125,5 +136,69 @@ button:focus {
 
 button:hover {
   transform: scale(0.98);
+}
+
+.loader .image-loader {
+  width: 138px;
+  height: 138px;
+  border-radius: 50%;
+  margin-bottom: 1rem;
+}
+
+.loader .text-loader, .loader .text-loader-2 {
+  width: 240px;
+  height: 30px;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.loader .text-loader-2 {
+  width: 350px;
+}
+
+.loader .button-loader {
+  width: 193px;
+  height: 53px;
+  border-radius: 4px;
+}
+
+@media screen and (max-width: 768px) {
+  img {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 12px;
+  }
+
+  h1 {
+    font-size: 16px;
+    line-height: 20px;
+    margin-bottom: 10px;
+  }
+
+  button {
+    font-size: 14px;
+    padding: 10px 16px;
+  }
+
+  .loader .image-loader {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 12px;
+  }
+
+  .loader .text-loader, .loader .text-loader-2 {
+    width: 150px;
+    height: 20px;
+    margin-bottom: 10px;
+  }
+
+  .loader .text-loader-2 {
+    width: 230px;
+  }
+
+  .loader .button-loader {
+    width: 144px;
+    height: 36px;
+  }
 }
 </style>
